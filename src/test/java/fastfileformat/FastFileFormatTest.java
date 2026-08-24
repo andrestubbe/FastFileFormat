@@ -157,4 +157,25 @@ public class FastFileFormatTest {
             Files.deleteIfExists(tempFile);
         }
     }
+
+    @Test
+    public void testTranscoding() {
+        String text = """
+                TITLE = Transcode Test
+                
+                [Window]
+                width = 1024
+                height = 768
+                """;
+
+        byte[] binary = FastFileFormat.textToBinary(text);
+        assertNotNull(binary);
+        assertTrue(binary.length > 0);
+
+        String backToText = FastFileFormat.binaryToText(binary);
+        assertNotNull(backToText);
+        assertTrue(backToText.contains("[Window]"));
+        assertTrue(backToText.contains("width                        = 1024"));
+        assertTrue(backToText.contains("height                       = 768"));
+    }
 }

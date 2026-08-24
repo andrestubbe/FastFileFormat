@@ -149,6 +149,84 @@ public final class FastFileFormat {
     }
 
     /**
+     * Transcodes a human-readable text document (.format) into a compact binary format payload.
+     *
+     * @param text Text document content.
+     * @return Compact binary byte array.
+     */
+    public static byte[] textToBinary(String text) {
+        TextFormatParser doc = parseText(text);
+        BinaryWriter bw = binaryWriter();
+        var all = doc.getAll();
+        bw.writeHeader(DEFAULT_MAGIC, DEFAULT_VERSION, (short) 1, 0);
+        bw.writeString(doc.getTitle());
+        bw.writeInt(all.size());
+        for (var entry : all.entrySet()) {
+            bw.writeString(entry.getKey());
+            bw.writeString(entry.getValue());
+        }
+        return bw.toByteArray();
+    }
+
+    /**
+     * Transcodes a compact binary format payload back into human-readable text.
+     *
+     * @param binaryData Binary payload.
+     * @return Formatted text string.
+     */
+    public static String binaryToText(byte[] binaryData) {
+        BinaryReader br = binaryReader(binaryData);
+        BinaryHeader header = br.readHeader();
+        String title = br.readString();
+        int count = br.readInt();
+        TextFormatWriter tw = textWriter(title);
+        String lastSection = null;
+        for (int i = 0; i < count; i++) {
+            String fullKey = br.readString();
+            String value = br.readString();
+            int dot = fullKey.indexOf('.');
+            if (dot != -1) {
+                String section = fullKey.substring(0, dot);
+                String subKey = fullKey.substring(dot + 1);
+                if (!section.equals(lastSection)) {
+                    tw.section(section);
+                    lastSection = section;
+                }
+                tw.set(subKey, value);
+            } else {
+                tw.set(fullKey, value);
+            }
+        }
+        return tw.toText();
+    }
+
+    /**
+     * Converts a text file to a binary file on disk.
+     *
+     * @param sourceText Input text file path.
+     * @param targetBin  Output binary file path.
+     * @throws IOException If I/O fails.
+     */
+    public static void convertTextToBinary(Path sourceText, Path targetBin) throws IOException {
+        String text = Files.readString(sourceText);
+        byte[] bytes = textToBinary(text);
+        Files.write(targetBin, bytes);
+    }
+
+    /**
+     * Converts a binary file to a human-readable text file on disk.
+     *
+     * @param sourceBin  Input binary file path.
+     * @param targetText Output text file path.
+     * @throws IOException If I/O fails.
+     */
+    public static void convertBinaryToText(Path sourceBin, Path targetText) throws IOException {
+        byte[] bytes = Files.readAllBytes(sourceBin);
+        String text = binaryToText(bytes);
+        Files.writeString(targetText, text);
+    }
+
+    /**
      * Loads a binary file directly into a {@link BinaryReader}.
      *
      * @param file File object.
