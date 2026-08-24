@@ -184,6 +184,44 @@ public final class BinaryWriter {
     }
 
     /**
+     * Writes a 32-bit integer using LEB128 VarInt compression via FastBinary.
+     *
+     * @param value 32-bit integer.
+     * @return This writer instance.
+     */
+    public BinaryWriter writeVarInt(int value) {
+        try {
+            fastbinary.VarInt.write(value, stream);
+        } catch (IOException ignored) {}
+        return this;
+    }
+
+    /**
+     * Writes a signed 32-bit integer using ZigZag mapping + VarInt compression via FastBinary.
+     *
+     * @param value Signed 32-bit integer.
+     * @return This writer instance.
+     */
+    public BinaryWriter writeSignedVarInt(int value) {
+        return writeVarInt(fastbinary.ZigZag.encode(value));
+    }
+
+    /**
+     * Writes a 64-bit long using LEB128 VarLong compression via FastBinary.
+     *
+     * @param value 64-bit long.
+     * @return This writer instance.
+     */
+    public BinaryWriter writeVarLong(long value) {
+        while ((value & ~0x7FL) != 0) {
+            stream.write((int) ((value & 0x7F) | 0x80));
+            value >>>= 7;
+        }
+        stream.write((int) (value & 0x7F));
+        return this;
+    }
+
+    /**
      * Writes an array of 32-bit floats in Little-Endian format.
      *
      * @param array Primitive float array.

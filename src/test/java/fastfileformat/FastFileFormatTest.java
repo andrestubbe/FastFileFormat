@@ -178,4 +178,21 @@ public class FastFileFormatTest {
         assertTrue(backToText.contains("width                        = 1024"));
         assertTrue(backToText.contains("height                       = 768"));
     }
+
+    @Test
+    public void testVarIntIntegration() {
+        BinaryWriter bw = FastFileFormat.binaryWriter();
+        bw.writeVarInt(42);
+        bw.writeVarInt(16384);
+        bw.writeSignedVarInt(-1);
+        bw.writeSignedVarInt(-5000);
+        bw.writeVarLong(9876543210123L);
+
+        BinaryReader br = FastFileFormat.binaryReader(bw.toByteArray());
+        assertEquals(42, br.readVarInt());
+        assertEquals(16384, br.readVarInt());
+        assertEquals(-1, br.readSignedVarInt());
+        assertEquals(-5000, br.readSignedVarInt());
+        assertEquals(9876543210123L, br.readVarLong());
+    }
 }

@@ -81,6 +81,33 @@ public final class BinaryReader {
     }
 
     /**
+     * Reads a 32-bit LEB128 VarInt via FastBinary.
+     *
+     * @return Decoded integer value.
+     */
+    public int readVarInt() {
+        return fastbinary.VarInt.readInt(buffer);
+    }
+
+    /**
+     * Reads a signed 32-bit integer decoded with VarInt + ZigZag via FastBinary.
+     *
+     * @return Decoded signed integer value.
+     */
+    public int readSignedVarInt() {
+        return fastbinary.ZigZag.decode(readVarInt());
+    }
+
+    /**
+     * Reads a 64-bit LEB128 VarLong via FastBinary.
+     *
+     * @return Decoded long value.
+     */
+    public long readVarLong() {
+        return fastbinary.VarInt.readLong(buffer);
+    }
+
+    /**
      * Reads a 64-bit long in Little-Endian format.
      *
      * @return Long value.
