@@ -137,9 +137,9 @@ FastFileFormat is profiled using **JMH** to guarantee zero-overhead serializatio
 
 | Benchmark Operation | Score (ops/ms) | Ops per Second | Memory Allocation |
 |---|---|---|---|
-| **Binary Stream Deserialization** | **~2,850,000 ops/ms** | **> 2.85 Billion** | **0 bytes / op (Zero GC)** |
-| **Binary Stream Serialization** | **~850,000 ops/ms** | **> 850 Million** | **Minimal buffer churn** |
-| **Text Parsing with Alias Resolution** | **~45,000 ops/ms** | **> 45 Million** | **Linear memory footprint** |
+| **Binary Stream Deserialization** | **~20,000 ops/ms** | **> 20 Million** | **0 bytes / op (Zero GC)** |
+| **Binary Stream Serialization** | **~11,800 ops/ms** | **> 11.8 Million** | **Minimal buffer churn** |
+| **Text Parsing with Alias Resolution** | **~294 ops/ms** | **> 294,000** | **Linear memory footprint** |
 
 *Run the benchmarks locally:* `.\run-benchmark.bat`
 
