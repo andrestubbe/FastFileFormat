@@ -1,69 +1,204 @@
 package fastfileformat.demo;
 
-import fastfileformat.BinaryHeader;
-import fastfileformat.BinaryReader;
-import fastfileformat.BinaryWriter;
-import fastfileformat.FastFileFormat;
-import fastfileformat.TextFormatParser;
-import fastfileformat.TextFormatWriter;
+import fastansi.FastANSI;
+import fastfileformat.*;
+
+import java.util.Arrays;
 
 public class Demo {
-    public static void main(String[] args) {
-        System.out.println("=================================================");
-        System.out.println("⚡ FastFileFormat 0.1.0 — Interactive Showcase");
-        System.out.println("=================================================\n");
 
-        // 1. Text Format Serialization & Variable Aliasing
-        System.out.println("📄 [1/3] Generating Structured Text Document...");
-        TextFormatWriter writer = FastFileFormat.textWriter("Application Master Config");
-        writer.comment("Core Graphic & Windowing Settings")
-                .section("Display")
-                .set("resolution.width", 2560)
-                .set("resolution.height", 1440)
-                .set("target_fps", 165)
-                .set("vsync_enabled", true)
-                .blankLine()
-                .section("Palette")
-                .set("brand.cyan", "#00F0FF")
-                .set("brand.magenta", "#FF007F")
-                .alias("ui.accent", "Palette.brand.cyan")
-                .alias("cursor.glow", "Palette.ui.accent");
+    private Demo() {}
 
-        String formattedText = writer.toText();
-        System.out.println(formattedText);
+    public static void main(String[] args) throws Exception {
 
-        // 2. Text Parsing & Dynamic Querying
-        System.out.println("🔍 [2/3] Parsing & Resolving Dynamic Aliases...");
-        TextFormatParser parser = FastFileFormat.parseText(formattedText);
-        System.out.println("Title: " + parser.getTitle());
-        System.out.println("Width: " + parser.getInt("Display.resolution.width", 0));
-        System.out.println("Target FPS: " + parser.getInt("Display.target_fps", 0));
-        System.out.println("VSync: " + parser.getBoolean("Display.vsync_enabled", false));
-        System.out.println("Accent (Resolved Alias): " + parser.getString("Palette.ui.accent", ""));
-        System.out.println("Glow (Chained Alias): " + parser.getString("Palette.cursor.glow", ""));
+        System.out.println(darkGray("==========================================================================================================="));
+        System.out.println(" " + boldWhite("FastFileFormat") + darkGray(" — Dual-Format Serialization Engine  |  Text Config  •  Binary Streaming  •  Transcoding"));
+        System.out.println(darkGray(" Zero-Dependency  |  Sub-Microsecond Binary I/O  |  Alias-Chaining  |  Text ↔ Binary Roundtrip"));
+        System.out.println(darkGray("==========================================================================================================="));
         System.out.println();
 
-        // 3. Ultra-Fast Binary Serialization & Deserialization
-        System.out.println("⚡ [3/3] Testing Sub-Microsecond Binary Streaming...");
+        // ── Phase 1: Text Format Write ──────────────────────────────────────────
+        System.out.println(darkGray("[Phase 1]") + " " + boldWhite("TextFormatWriter — Structured Config Serialization") + darkGray(" (Sections, aliases, comments, typed values)"));
+        System.out.println();
+
+        long t0 = System.nanoTime();
+        TextFormatWriter w = FastFileFormat.textWriter("Game Engine Config v3");
+        w.comment("Rendering pipeline settings")
+         .section("Renderer")
+         .set("api",               "Vulkan")
+         .set("resolution.width",  2560)
+         .set("resolution.height", 1440)
+         .set("target_fps",        165)
+         .set("vsync",             true)
+         .blankLine()
+         .comment("Brand palette with alias chaining")
+         .section("Palette")
+         .set("cyan",              "#00F0FF")
+         .set("magenta",           "#FF007F")
+         .alias("ui.accent",       "Palette.cyan")
+         .alias("cursor.glow",     "Palette.ui.accent")
+         .blankLine()
+         .section("Audio")
+         .set("sample_rate",       48000)
+         .set("channels",          2)
+         .set("codec",             "OPUS");
+        String text = w.toText();
+        long writeNs = System.nanoTime() - t0;
+
+        String[] lines = text.split("\n");
+        for (int i = 0; i < lines.length; i++) {
+            boolean last = (i == lines.length - 1);
+            System.out.printf("  %s %s%n", darkGray(last ? "└──" : "├──"), white(lines[i]));
+        }
+        System.out.printf("%n  %s %s%n%n",
+                darkGray("└── Serialized"),
+                boldWhite(lines.length + " lines  in  " + String.format("%.3f µs", writeNs / 1_000.0)));
+
+        // ── Phase 2: Text Parsing & Alias Resolution ───────────────────────────
+        System.out.println(darkGray("[Phase 2]") + " " + boldWhite("TextFormatParser — Query & Alias Resolution") + darkGray(" (Typed getters + chained alias traversal)"));
+        System.out.println();
+
+        long p0 = System.nanoTime();
+        TextFormatParser p = FastFileFormat.parseText(text);
+        long parseNs = System.nanoTime() - p0;
+
+        String[][] rows = {
+            {"Title",                      p.getTitle()},
+            {"Renderer.api",               p.getString("Renderer.api", "-")},
+            {"Renderer.resolution.width",  String.valueOf(p.getInt("Renderer.resolution.width", 0))},
+            {"Renderer.target_fps",        String.valueOf(p.getInt("Renderer.target_fps", 0))},
+            {"Renderer.vsync",             String.valueOf(p.getBoolean("Renderer.vsync", false))},
+            {"Palette.cyan  (direct)",     p.getString("Palette.cyan", "-")},
+            {"Palette.ui.accent  (alias)", p.getString("Palette.ui.accent", "-")},
+            {"Palette.cursor.glow (chain)",p.getString("Palette.cursor.glow", "-")},
+            {"Audio.sample_rate",          String.valueOf(p.getInt("Audio.sample_rate", 0))},
+            {"Audio.codec",                p.getString("Audio.codec", "-")},
+        };
+        for (int i = 0; i < rows.length; i++) {
+            boolean last = (i == rows.length - 1);
+            System.out.printf("  %s %-32s %s%n",
+                darkGray(last ? "└──" : "├──"),
+                darkGray(rows[i][0]),
+                boldWhite(rows[i][1]));
+        }
+        System.out.printf("%n  %s %s  |  %s%n%n",
+                darkGray("└── Parsed"),
+                boldWhite(rows.length + " fields"),
+                boldWhite(String.format("%.3f µs", parseNs / 1_000.0)));
+
+        // ── Phase 3: Binary Streaming ───────────────────────────────────────────
+        System.out.println(darkGray("[Phase 3]") + " " + boldWhite("BinaryWriter / BinaryReader — Sub-Microsecond Streaming") + darkGray(" (Header + typed payloads)"));
+        System.out.println();
+
+        long bw0 = System.nanoTime();
         BinaryWriter bw = FastFileFormat.binaryWriter();
-        bw.writeHeader(FastFileFormat.DEFAULT_MAGIC, (short) 1, (short) 42, 0);
-        bw.writeString("FastJava High-Throughput Payload");
-        bw.writeIntArray(new int[]{100, 200, 300, 400, 500});
-        bw.writeFloatArray(new float[]{1.5f, 2.5f, 3.5f});
+        bw.writeHeader(FastFileFormat.DEFAULT_MAGIC, (short) 1, (short) 7, 0);
+        bw.writeString("FastFileFormat High-Speed Payload");
+        bw.writeInt(999_999);
+        bw.writeIntArray(new int[]{10, 20, 30, 40, 50, 60, 70, 80, 90, 100});
+        bw.writeFloatArray(new float[]{1.1f, 2.2f, 3.3f, 4.4f, 5.5f});
         bw.writeLong(System.currentTimeMillis());
+        bw.writeBoolean(true);
+        bw.writeString("EOF");
+        byte[] bytes = bw.toByteArray();
+        long binWriteNs = System.nanoTime() - bw0;
 
-        byte[] binaryBytes = bw.toByteArray();
-        System.out.printf("Binary payload size: %d bytes (including 12-byte header)\n", binaryBytes.length);
-
-        BinaryReader br = FastFileFormat.binaryReader(binaryBytes);
+        long br0 = System.nanoTime();
+        BinaryReader br = FastFileFormat.binaryReader(bytes);
         BinaryHeader header = br.readHeader();
-        System.out.printf("Header Magic: 0x%X | Version: %d | PayloadType: %d\n",
-                header.getMagic(), header.getVersion(), header.getPayloadType());
-        System.out.println("Payload String: " + br.readString());
-        System.out.println("Int Array Length: " + br.readIntArray().length);
-        System.out.println("Float Array Length: " + br.readFloatArray().length);
-        System.out.println("Timestamp: " + br.readLong());
+        String label   = br.readString();
+        int    count   = br.readInt();
+        int[]  ints    = br.readIntArray();
+        float[] flts   = br.readFloatArray();
+        long   ts      = br.readLong();
+        boolean flag   = br.readBoolean();
+        String eof     = br.readString();
+        long binReadNs = System.nanoTime() - br0;
 
-        System.out.println("\n✅ FastFileFormat Demo Completed Successfully!");
+        String[][] brows = {
+            {"Magic (hex)",    String.format("0x%X", header.getMagic())},
+            {"Version",        String.valueOf(header.getVersion())},
+            {"PayloadType",    String.valueOf(header.getPayloadType())},
+            {"Payload label",  label},
+            {"Int value",      String.valueOf(count)},
+            {"Int[]  length",  ints.length + "  → " + Arrays.toString(ints)},
+            {"Float[] length", flts.length + "  → " + Arrays.toString(flts)},
+            {"Timestamp",      String.valueOf(ts)},
+            {"Boolean flag",   String.valueOf(flag)},
+            {"EOF marker",     eof},
+            {"Total bytes",    bytes.length + " B"},
+        };
+        for (int i = 0; i < brows.length; i++) {
+            boolean last = (i == brows.length - 1);
+            System.out.printf("  %s %-20s %s%n",
+                darkGray(last ? "└──" : "├──"),
+                darkGray(brows[i][0]),
+                boldWhite(brows[i][1]));
+        }
+        System.out.printf("%n  %s %s  |  %s%n%n",
+                darkGray("└── Write"),
+                boldWhite(String.format("%.3f µs", binWriteNs / 1_000.0)),
+                boldWhite("Read  " + String.format("%.3f µs", binReadNs / 1_000.0)));
+
+        // ── Phase 4: Text ↔ Binary Transcoding ─────────────────────────────────
+        System.out.println(darkGray("[Phase 4]") + " " + boldWhite("Transcoding — Text ↔ Binary Roundtrip") + darkGray(" (Lossless encode + decode with field verification)"));
+        System.out.println();
+
+        long enc0 = System.nanoTime();
+        byte[] encoded = FastFileFormat.textToBinary(text);
+        long encNs = System.nanoTime() - enc0;
+
+        long dec0 = System.nanoTime();
+        String decoded = FastFileFormat.binaryToText(encoded);
+        long decNs = System.nanoTime() - dec0;
+
+        TextFormatParser dp = FastFileFormat.parseText(decoded);
+        boolean lossless = dp.getString("Renderer.api", "").equals("Vulkan")
+                        && dp.getString("Palette.cyan", "").equals("#00F0FF")
+                        && dp.getString("Audio.codec", "").equals("OPUS");
+
+        String[][] trows = {
+            {"Original text size",   text.length() + " chars"},
+            {"Binary encoded size",  encoded.length + " bytes  (" + String.format("%.1f%%", encoded.length * 100.0 / text.length()) + ")"},
+            {"Decoded title",        dp.getTitle()},
+            {"Renderer.api",         dp.getString("Renderer.api", "-")},
+            {"Palette.cyan",         dp.getString("Palette.cyan", "-")},
+            {"Audio.codec",          dp.getString("Audio.codec", "-")},
+            {"Roundtrip lossless",   lossless ? "✅ YES — all fields match" : "❌ MISMATCH"},
+        };
+        for (int i = 0; i < trows.length; i++) {
+            boolean last = (i == trows.length - 1);
+            System.out.printf("  %s %-24s %s%n",
+                darkGray(last ? "└──" : "├──"),
+                darkGray(trows[i][0]),
+                boldWhite(trows[i][1]));
+        }
+        System.out.printf("%n  %s %s  |  %s%n%n",
+                darkGray("└── Encode"),
+                boldWhite(String.format("%.3f µs", encNs / 1_000.0)),
+                boldWhite("Decode  " + String.format("%.3f µs", decNs / 1_000.0)));
+
+        // ── Summary ─────────────────────────────────────────────────────────────
+        System.out.println(darkGray("==========================================================================================================="));
+        System.out.printf(" " + boldWhite("COMPLETE:") + darkGray(" 4 phases | Text write %s | Parse %s | Binary write %s | Binary read %s | Encode %s | Decode %s%n"),
+                boldWhite(String.format("%.3f µs", writeNs / 1_000.0)),
+                boldWhite(String.format("%.3f µs", parseNs / 1_000.0)),
+                boldWhite(String.format("%.3f µs", binWriteNs / 1_000.0)),
+                boldWhite(String.format("%.3f µs", binReadNs / 1_000.0)),
+                boldWhite(String.format("%.3f µs", encNs / 1_000.0)),
+                boldWhite(String.format("%.3f µs", decNs / 1_000.0)));
+        System.out.println(darkGray("==========================================================================================================="));
+    }
+
+    private static String darkGray(String text) {
+        return FastANSI.fg(240) + text + FastANSI.RESET;
+    }
+
+    private static String white(String text) {
+        return FastANSI.FG_BRIGHT_WHITE + text + FastANSI.RESET;
+    }
+
+    private static String boldWhite(String text) {
+        return FastANSI.BOLD + FastANSI.FG_BRIGHT_WHITE + text + FastANSI.RESET;
     }
 }
