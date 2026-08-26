@@ -6,7 +6,7 @@
 
     <groupId>com.github.andrestubbe</groupId>
     <artifactId>FastFileFormat</artifactId>
-    <version>0.1.0</version>
+    <version>0.1.1</version>
     <packaging>jar</packaging>
 
     <name>FastFileFormat</name>
@@ -35,6 +35,13 @@
         <junit.version>5.10.0</junit.version>
     </properties>
 
+    <repositories>
+        <repository>
+            <id>jitpack.io</id>
+            <url>https://jitpack.io</url>
+        </repository>
+    </repositories>
+
     <dependencies>
         <!-- FastCore (Mandatory FastJava Foundation) -->
         <dependency>
@@ -47,7 +54,7 @@
         <dependency>
             <groupId>com.github.andrestubbe</groupId>
             <artifactId>FastBinary</artifactId>
-            <version>0.1.0</version>
+            <version>0.1.1</version>
         </dependency>
 
         <!-- Testing -->
