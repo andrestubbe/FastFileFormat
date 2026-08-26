@@ -12,13 +12,13 @@ public class Demo {
     public static void main(String[] args) throws Exception {
 
         System.out.println(darkGray("==========================================================================================================="));
-        System.out.println(" " + boldWhite("FastFileFormat") + darkGray(" — Dual-Format Serialization Engine  |  Text Config  •  Binary Streaming  •  Transcoding"));
-        System.out.println(darkGray(" Zero-Dependency  |  Sub-Microsecond Binary I/O  |  Alias-Chaining  |  Text ↔ Binary Roundtrip"));
+        System.out.println(" " + boldWhite("FastFileFormat") + darkGray(" â€” Dual-Format Serialization Engine  |  Text Config  â€¢  Binary Streaming  â€¢  Transcoding"));
+        System.out.println(darkGray(" Zero-Dependency  |  Sub-Microsecond Binary I/O  |  Alias-Chaining  |  Text â†” Binary Roundtrip"));
         System.out.println(darkGray("==========================================================================================================="));
         System.out.println();
 
-        // ── Phase 1: Text Format Write ──────────────────────────────────────────
-        System.out.println(darkGray("[Phase 1]") + " " + boldWhite("TextFormatWriter — Structured Config Serialization") + darkGray(" (Sections, aliases, comments, typed values)"));
+        // â”€â”€ Phase 1: Text Format Write â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        System.out.println(darkGray("[Phase 1]") + " " + boldWhite("TextFormatWriter â€” Structured Config Serialization") + darkGray(" (Sections, aliases, comments, typed values)"));
         System.out.println();
 
         long t0 = System.nanoTime();
@@ -48,14 +48,14 @@ public class Demo {
         String[] lines = text.split("\n");
         for (int i = 0; i < lines.length; i++) {
             boolean last = (i == lines.length - 1);
-            System.out.printf("  %s %s%n", darkGray(last ? "└──" : "├──"), white(lines[i]));
+            System.out.printf("  %s %s%n", darkGray(last ? "â””â”€â”€" : "â”œâ”€â”€"), white(lines[i]));
         }
         System.out.printf("%n  %s %s%n%n",
-                darkGray("└── Serialized"),
-                boldWhite(lines.length + " lines  in  " + String.format("%.3f µs", writeNs / 1_000.0)));
+                darkGray("â””â”€â”€ Serialized"),
+                boldWhite(lines.length + " lines  in  " + String.format("%.3f Âµs", writeNs / 1_000.0)));
 
-        // ── Phase 2: Text Parsing & Alias Resolution ───────────────────────────
-        System.out.println(darkGray("[Phase 2]") + " " + boldWhite("TextFormatParser — Query & Alias Resolution") + darkGray(" (Typed getters + chained alias traversal)"));
+        // â”€â”€ Phase 2: Text Parsing & Alias Resolution â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        System.out.println(darkGray("[Phase 2]") + " " + boldWhite("TextFormatParser â€” Query & Alias Resolution") + darkGray(" (Typed getters + chained alias traversal)"));
         System.out.println();
 
         long p0 = System.nanoTime();
@@ -77,17 +77,17 @@ public class Demo {
         for (int i = 0; i < rows.length; i++) {
             boolean last = (i == rows.length - 1);
             System.out.printf("  %s %-32s %s%n",
-                darkGray(last ? "└──" : "├──"),
+                darkGray(last ? "â””â”€â”€" : "â”œâ”€â”€"),
                 darkGray(rows[i][0]),
                 boldWhite(rows[i][1]));
         }
         System.out.printf("%n  %s %s  |  %s%n%n",
-                darkGray("└── Parsed"),
+                darkGray("â””â”€â”€ Parsed"),
                 boldWhite(rows.length + " fields"),
-                boldWhite(String.format("%.3f µs", parseNs / 1_000.0)));
+                boldWhite(String.format("%.3f Âµs", parseNs / 1_000.0)));
 
-        // ── Phase 3: Binary Streaming ───────────────────────────────────────────
-        System.out.println(darkGray("[Phase 3]") + " " + boldWhite("BinaryWriter / BinaryReader — Sub-Microsecond Streaming") + darkGray(" (Header + typed payloads)"));
+        // â”€â”€ Phase 3: Binary Streaming â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        System.out.println(darkGray("[Phase 3]") + " " + boldWhite("BinaryWriter / BinaryReader â€” Sub-Microsecond Streaming") + darkGray(" (Header + typed payloads)"));
         System.out.println();
 
         long bw0 = System.nanoTime();
@@ -98,7 +98,7 @@ public class Demo {
         bw.writeIntArray(new int[]{10, 20, 30, 40, 50, 60, 70, 80, 90, 100});
         bw.writeFloatArray(new float[]{1.1f, 2.2f, 3.3f, 4.4f, 5.5f});
         bw.writeLong(System.currentTimeMillis());
-        bw.writeBoolean(true);
+        bw.writeByte(1);
         bw.writeString("EOF");
         byte[] bytes = bw.toByteArray();
         long binWriteNs = System.nanoTime() - bw0;
@@ -111,7 +111,7 @@ public class Demo {
         int[]  ints    = br.readIntArray();
         float[] flts   = br.readFloatArray();
         long   ts      = br.readLong();
-        boolean flag   = br.readBoolean();
+        byte flag      = br.readByte();
         String eof     = br.readString();
         long binReadNs = System.nanoTime() - br0;
 
@@ -121,27 +121,27 @@ public class Demo {
             {"PayloadType",    String.valueOf(header.getPayloadType())},
             {"Payload label",  label},
             {"Int value",      String.valueOf(count)},
-            {"Int[]  length",  ints.length + "  → " + Arrays.toString(ints)},
-            {"Float[] length", flts.length + "  → " + Arrays.toString(flts)},
+            {"Int[]  length",  ints.length + "  â†’ " + Arrays.toString(ints)},
+            {"Float[] length", flts.length + "  â†’ " + Arrays.toString(flts)},
             {"Timestamp",      String.valueOf(ts)},
-            {"Boolean flag",   String.valueOf(flag)},
+            {"Flag (byte)",    String.valueOf(flag)},
             {"EOF marker",     eof},
             {"Total bytes",    bytes.length + " B"},
         };
         for (int i = 0; i < brows.length; i++) {
             boolean last = (i == brows.length - 1);
             System.out.printf("  %s %-20s %s%n",
-                darkGray(last ? "└──" : "├──"),
+                darkGray(last ? "â””â”€â”€" : "â”œâ”€â”€"),
                 darkGray(brows[i][0]),
                 boldWhite(brows[i][1]));
         }
         System.out.printf("%n  %s %s  |  %s%n%n",
-                darkGray("└── Write"),
-                boldWhite(String.format("%.3f µs", binWriteNs / 1_000.0)),
-                boldWhite("Read  " + String.format("%.3f µs", binReadNs / 1_000.0)));
+                darkGray("â””â”€â”€ Write"),
+                boldWhite(String.format("%.3f Âµs", binWriteNs / 1_000.0)),
+                boldWhite("Read  " + String.format("%.3f Âµs", binReadNs / 1_000.0)));
 
-        // ── Phase 4: Text ↔ Binary Transcoding ─────────────────────────────────
-        System.out.println(darkGray("[Phase 4]") + " " + boldWhite("Transcoding — Text ↔ Binary Roundtrip") + darkGray(" (Lossless encode + decode with field verification)"));
+        // â”€â”€ Phase 4: Text â†” Binary Transcoding â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        System.out.println(darkGray("[Phase 4]") + " " + boldWhite("Transcoding â€” Text â†” Binary Roundtrip") + darkGray(" (Lossless encode + decode with field verification)"));
         System.out.println();
 
         long enc0 = System.nanoTime();
@@ -164,29 +164,29 @@ public class Demo {
             {"Renderer.api",         dp.getString("Renderer.api", "-")},
             {"Palette.cyan",         dp.getString("Palette.cyan", "-")},
             {"Audio.codec",          dp.getString("Audio.codec", "-")},
-            {"Roundtrip lossless",   lossless ? "✅ YES — all fields match" : "❌ MISMATCH"},
+            {"Roundtrip lossless",   lossless ? "âœ… YES â€” all fields match" : "âŒ MISMATCH"},
         };
         for (int i = 0; i < trows.length; i++) {
             boolean last = (i == trows.length - 1);
             System.out.printf("  %s %-24s %s%n",
-                darkGray(last ? "└──" : "├──"),
+                darkGray(last ? "â””â”€â”€" : "â”œâ”€â”€"),
                 darkGray(trows[i][0]),
                 boldWhite(trows[i][1]));
         }
         System.out.printf("%n  %s %s  |  %s%n%n",
-                darkGray("└── Encode"),
-                boldWhite(String.format("%.3f µs", encNs / 1_000.0)),
-                boldWhite("Decode  " + String.format("%.3f µs", decNs / 1_000.0)));
+                darkGray("â””â”€â”€ Encode"),
+                boldWhite(String.format("%.3f Âµs", encNs / 1_000.0)),
+                boldWhite("Decode  " + String.format("%.3f Âµs", decNs / 1_000.0)));
 
-        // ── Summary ─────────────────────────────────────────────────────────────
+        // â”€â”€ Summary â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
         System.out.println(darkGray("==========================================================================================================="));
         System.out.printf(" " + boldWhite("COMPLETE:") + darkGray(" 4 phases | Text write %s | Parse %s | Binary write %s | Binary read %s | Encode %s | Decode %s%n"),
-                boldWhite(String.format("%.3f µs", writeNs / 1_000.0)),
-                boldWhite(String.format("%.3f µs", parseNs / 1_000.0)),
-                boldWhite(String.format("%.3f µs", binWriteNs / 1_000.0)),
-                boldWhite(String.format("%.3f µs", binReadNs / 1_000.0)),
-                boldWhite(String.format("%.3f µs", encNs / 1_000.0)),
-                boldWhite(String.format("%.3f µs", decNs / 1_000.0)));
+                boldWhite(String.format("%.3f Âµs", writeNs / 1_000.0)),
+                boldWhite(String.format("%.3f Âµs", parseNs / 1_000.0)),
+                boldWhite(String.format("%.3f Âµs", binWriteNs / 1_000.0)),
+                boldWhite(String.format("%.3f Âµs", binReadNs / 1_000.0)),
+                boldWhite(String.format("%.3f Âµs", encNs / 1_000.0)),
+                boldWhite(String.format("%.3f Âµs", decNs / 1_000.0)));
         System.out.println(darkGray("==========================================================================================================="));
     }
 
