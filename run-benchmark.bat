@@ -1,18 +1,24 @@
 @echo off
-chcp 65001 >nul
+setlocal
 cd /d "%~dp0"
+echo ===================================================
+echo  Building FastFileFormat JMH Benchmarks Uber-Jar
+echo ===================================================
+echo [1/3] Building FastFileFormat...
+call "C:\Users\andre\tools\apache-maven-3.9.9\bin\mvn.cmd" install -DskipTests
+if %ERRORLEVEL% NEQ 0 (
+    echo FastFileFormat install failed!
+    exit /b %ERRORLEVEL%
+)
 
-echo ⚡ Building Main Project (FastFileFormat)...
-call mvn install -DskipTests -q
-if %ERRORLEVEL% NEQ 0 ( echo ❌ Main build failed. & pause & exit /b %ERRORLEVEL% )
-
-echo 🛠 Building Benchmark Uber-JAR...
+echo [2/3] Building Benchmark Uber-JAR...
 cd examples\Benchmark
-call mvn package -DskipTests -q
-if %ERRORLEVEL% NEQ 0 ( echo ❌ Benchmark build failed. & cd ..\.. & pause & exit /b %ERRORLEVEL% )
+call "C:\Users\andre\tools\apache-maven-3.9.9\bin\mvn.cmd" clean package
+if %ERRORLEVEL% NEQ 0 (
+    echo Benchmark package failed!
+    exit /b %ERRORLEVEL%
+)
 
-echo 🚀 Running Official JMH Benchmarks for FastFileFormat...
-java --add-opens=java.base/jdk.internal.misc=ALL-UNNAMED --add-exports=java.base/jdk.internal.misc=ALL-UNNAMED -jar target\benchmarks.jar -jvmArgs "-Xmx4g"
-
-cd ..\..
+echo [3/3] Running JMH Benchmarks...
+java -jar target\benchmarks.jar -f 1 -wi 2 -i 3 -tu ms -bm thrpt
 pause

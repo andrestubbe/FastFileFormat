@@ -1,22 +1,25 @@
 @echo off
-chcp 65001 >nul
+setlocal
 cd /d "%~dp0"
+echo ===================================================
+echo  FastFileFormat Demo
+echo ===================================================
+echo [1/3] Building FastFileFormat...
+call "C:\Users\andre\tools\apache-maven-3.9.9\bin\mvn.cmd" install -DskipTests
+if %ERRORLEVEL% NEQ 0 (
+    echo FastFileFormat build failed!
+    exit /b %ERRORLEVEL%
+)
 
-echo ⚡ Building Main Project (FastFileFormat)...
-call mvn install -DskipTests -q
-if %ERRORLEVEL% NEQ 0 ( echo ❌ Main build failed. & pause & exit /b %ERRORLEVEL% )
+echo [2/3] Compiling Demo...
+cd examples\Demo
+call "C:\Users\andre\tools\apache-maven-3.9.9\bin\mvn.cmd" compile
+if %ERRORLEVEL% NEQ 0 (
+    echo Demo compilation failed!
+    exit /b %ERRORLEVEL%
+)
 
-echo 🔨 Compiling Demo...
-if not exist examples\Demo\target\classes mkdir examples\Demo\target\classes
-set CP=target\FastFileFormat-0.1.1.jar
-set M2=%USERPROFILE%\.m2\repository\com\github\andrestubbe
-set CP=%CP%;%M2%\FastANSI\0.1.3\FastANSI-0.1.3.jar
-set CP=%CP%;%M2%\FastBinary\0.1.1\FastBinary-0.1.1.jar
-set CP=%CP%;%M2%\fastcore\0.1.0\fastcore-0.1.0.jar
-javac -encoding UTF-8 -cp "%CP%" -d "examples\Demo\target\classes" "examples\Demo\src\main\java\fastfileformat\demo\Demo.java"
-if %ERRORLEVEL% NEQ 0 ( echo ❌ Demo compile failed. & pause & exit /b %ERRORLEVEL% )
-
-echo 🚀 Running FastFileFormat Interactive Demo...
-java -Dfile.encoding=UTF-8 -Dstdout.encoding=UTF-8 -cp "%CP%;examples\Demo\target\classes" fastfileformat.demo.Demo
-
+echo [3/3] Running Demo...
+call "C:\Users\andre\tools\apache-maven-3.9.9\bin\mvn.cmd" exec:java "-Dexec.mainClass=fastfileformat.demo.Demo"
+cd ..\..
 pause

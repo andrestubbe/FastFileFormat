@@ -5,7 +5,15 @@ import fastfileformat.BinaryReader;
 import fastfileformat.BinaryWriter;
 import fastfileformat.FastFileFormat;
 import fastfileformat.TextFormatParser;
-import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.annotations.BenchmarkMode;
+import org.openjdk.jmh.annotations.Fork;
+import org.openjdk.jmh.annotations.Measurement;
+import org.openjdk.jmh.annotations.Mode;
+import org.openjdk.jmh.annotations.OutputTimeUnit;
+import org.openjdk.jmh.annotations.Scope;
+import org.openjdk.jmh.annotations.Setup;
+import org.openjdk.jmh.annotations.State;
+import org.openjdk.jmh.annotations.Warmup;
 
 import java.util.concurrent.TimeUnit;
 
@@ -15,7 +23,7 @@ import java.util.concurrent.TimeUnit;
 @Warmup(iterations = 3, time = 1)
 @Measurement(iterations = 5, time = 1)
 @Fork(1)
-public class FastFileFormatBenchmark {
+public class Benchmark {
 
     private String textConfig;
     private byte[] binaryPayload;
@@ -46,12 +54,12 @@ public class FastFileFormatBenchmark {
         binaryPayload = bw.toByteArray();
     }
 
-    @Benchmark
+    @org.openjdk.jmh.annotations.Benchmark
     public TextFormatParser benchmarkTextParsing() {
         return FastFileFormat.parseText(textConfig);
     }
 
-    @Benchmark
+    @org.openjdk.jmh.annotations.Benchmark
     public byte[] benchmarkBinarySerialization() {
         BinaryWriter bw = FastFileFormat.binaryWriter();
         bw.writeHeader(FastFileFormat.DEFAULT_MAGIC, (short) 1, (short) 10, 0);
@@ -62,7 +70,7 @@ public class FastFileFormatBenchmark {
         return bw.toByteArray();
     }
 
-    @Benchmark
+    @org.openjdk.jmh.annotations.Benchmark
     public BinaryHeader benchmarkBinaryDeserialization() {
         BinaryReader br = FastFileFormat.binaryReader(binaryPayload);
         BinaryHeader h = br.readHeader();
