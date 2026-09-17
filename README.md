@@ -100,19 +100,20 @@ public class BinaryDemo {
 
 Traditional data formats in Java (JSON, YAML, XML, Java Serialization) are ill-suited for performance-critical engines:
 
-- **Massive Memory Bloat & GC Overhead** — Jackson, Gson, and SnakeYAML create millions of intermediate objects, wrapper instances, and HashMaps during startup, causing garbage collection spikes.
-- **Dangerous Java Serialization** — Java's built-in `Serializable` is notoriously slow, insecure, and tightly coupled to classpath class definitions.
-- **Complex Schema Setup** — Protocol Buffers and FlatBuffers require external code generation (`protoc`) and rigid schema compilation.
+1. **Massive Memory Bloat & GC Overhead**: Jackson, Gson, and SnakeYAML create millions of intermediate objects, wrapper instances, and HashMaps during parsing, causing garbage collection spikes.
+2. **Dangerous Legacy Serialization**: Java's built-in `Serializable` is notoriously slow, insecure, and tightly coupled to rigid classpath class definitions.
+3. **Complex External Tooling**: High-speed alternatives like Protocol Buffers and FlatBuffers require external schema compilers (`protoc`) and cumbersome build-step code generation.
 
-FastFileFormat solves this by offering a zero-dependency, dual-format standard:
+FastFileFormat solves this by offering a lightweight, zero-dependency, dual-mode text and binary format standard:
 
-| Feature | JSON / YAML (Jackson, Gson) | Java Serialization | Protocol Buffers | FastFileFormat |
-|:---|:---|:---|:---|:---|
-| **Human Readability** | ✅ Yes (Text) | ❌ Binary Blob | ❌ Binary Blob | ✅ Clean Key-Value & Aliases |
-| **Parsing Latency** | 50–500 µs (Token parsing) | 100–1,000 µs (Reflection) | 5–20 µs (C++ bindings) | < 1 µs (Zero-copy binary stream) |
-| **GC Pressure** | High object churn | Massive class metadata | Medium buffer allocation | Zero GC on primitive reads |
-| **External Compilers** | None | None | ⚠️ Requires `protoc` | Pure Java 17+ (No tooling setup) |
-| **Dual Format Bridge** | Separate formats required | Binary only | Separate text proto | Unified Text-to-Binary transcode |
+| Feature | JSON / YAML (Jackson/Gson) | Protocol Buffers | FastFileFormat |
+|:---|:---|:---|:---|
+| **Human Readability** | ✅ Yes (Text) | ❌ Binary blob only | ✅ Clean Key-Value & Aliases |
+| **Parsing Latency** | 50–500 µs (Token parsing) | 5–20 µs (Generated code) | **< 1 µs** (Direct binary stream) |
+| **GC Pressure** | High object churn / HashMaps | Medium buffer allocation | **0 bytes** on primitive reads |
+| **Tooling & Compilers** | None | ⚠️ Requires `protoc` / schema | None (Pure Java 17+ / no setup) |
+| **Dual Format Bridge** | Separate formats required | Binary only (Complex textproto) | Unified Text-to-Binary transcode |
+| **Dependencies** | Heavy (~2–5 MB JARs) | Protobuf runtime JAR | **Zero dependencies** (< 35 KB) |
 
 ---
 
